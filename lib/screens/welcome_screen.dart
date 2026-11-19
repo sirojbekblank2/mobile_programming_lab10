@@ -2,15 +2,18 @@
 import 'package:flutter/material.dart';
 
 import '../services/classifier.dart';
+import '../services/history_service.dart';
 import 'main_navigation.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({
     super.key,
     required this.classifier,
+    required this.history,
   });
 
   final Classifier classifier;
+  final HistoryService history;
 
   @override
   Widget build(BuildContext context) {
@@ -67,10 +70,6 @@ class WelcomeScreen extends StatelessWidget {
                         size: 18,
                       ),
                       label: Text(label),
-                      backgroundColor: theme.colorScheme.surface,
-                      side: BorderSide(
-                        color: theme.colorScheme.outlineVariant,
-                      ),
                     );
                   }).toList(),
                 ),
@@ -83,6 +82,7 @@ class WelcomeScreen extends StatelessWidget {
                         MaterialPageRoute(
                           builder: (_) => MainNavigation(
                             classifier: classifier,
+                            history: history,
                           ),
                         ),
                       );

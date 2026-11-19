@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'screens/welcome_screen.dart';
 import 'services/classifier.dart';
+import 'services/history_service.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -10,7 +11,14 @@ Future<void> main() async {
 
   try {
     final classifier = await Classifier.load();
-    runApp(ClassifierApp(classifier: classifier));
+    final history = HistoryService();
+
+    runApp(
+      ClassifierApp(
+        classifier: classifier,
+        history: history,
+      ),
+    );
   } catch (e) {
     runApp(StartupErrorApp(error: e.toString()));
   }
@@ -20,9 +28,11 @@ class ClassifierApp extends StatefulWidget {
   const ClassifierApp({
     super.key,
     required this.classifier,
+    required this.history,
   });
 
   final Classifier classifier;
+  final HistoryService history;
 
   @override
   State<ClassifierApp> createState() => _ClassifierAppState();
@@ -41,7 +51,10 @@ class _ClassifierAppState extends State<ClassifierApp> {
       debugShowCheckedModeBanner: false,
       title: 'Object Lens',
       theme: AppTheme.light,
-      home: WelcomeScreen(classifier: widget.classifier),
+      home: WelcomeScreen(
+        classifier: widget.classifier,
+        history: widget.history,
+      ),
     );
   }
 }

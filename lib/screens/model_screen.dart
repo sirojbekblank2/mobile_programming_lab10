@@ -49,8 +49,7 @@ class ModelScreen extends StatelessWidget {
                   ),
                   _InfoRow(
                     label: 'Input size',
-                    value: '${Classifier.inputSize} × '
-                        '${Classifier.inputSize}',
+                    value: '${Classifier.inputSize} × ${Classifier.inputSize}',
                   ),
                   _InfoRow(
                     label: 'Number of classes',
@@ -59,6 +58,10 @@ class ModelScreen extends StatelessWidget {
                   const _InfoRow(
                     label: 'Processing',
                     value: 'On-device',
+                  ),
+                  const _InfoRow(
+                    label: 'Model type',
+                    value: 'TensorFlow Lite Float',
                   ),
                 ],
               ),
@@ -97,10 +100,9 @@ class ModelScreen extends StatelessWidget {
             child: ListTile(
               leading: Icon(Icons.palette_outlined),
               title: Text('Material 3 Design Kit'),
-              subtitle: Text('Google'),
+              subtitle: Text('Google — verify the exact Figma file and license'),
             ),
           ),
-          const SizedBox(height: 20),
         ],
       ),
     );

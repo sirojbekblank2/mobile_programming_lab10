@@ -1,25 +1,20 @@
 
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 
-import '../services/classifier.dart';
+import '../models/classification_record.dart';
 
 class ResultScreen extends StatelessWidget {
   const ResultScreen({
     super.key,
-    required this.imageBytes,
-    required this.predictions,
-    required this.source,
+    required this.record,
   });
 
-  final Uint8List imageBytes;
-  final List<Prediction> predictions;
-  final String source;
+  final ClassificationRecord record;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final topPrediction = record.topPrediction;
 
     return Scaffold(
       appBar: AppBar(
@@ -34,37 +29,91 @@ class ResultScreen extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
                   maxHeight: 360,
+                  minHeight: 120,
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(18),
                   child: Image.memory(
-                    imageBytes,
+                    record.imageBytes,
                     fit: BoxFit.contain,
+                    errorBuilder: (_, _, _) {
+                      return const Center(
+                        child: Icon(Icons.broken_image, size: 60),
+                      );
+                    },
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 16),
+
+            Row(
+              children: [
+                Icon(
+                  Icons.source_outlined,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Source: ${record.source}',
+                  style: theme.textTheme.bodyMedium,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             Text(
-              'Source: $source',
+              'Classified: ${_formatDate(record.createdAt)}',
               style: theme.textTheme.bodyMedium,
             ),
             const SizedBox(height: 28),
+
+            if (topPrediction != null) ...[
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'TOP PREDICTION',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: theme.colorScheme.primary,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        topPrediction.label,
+                        style: theme.textTheme.headlineMedium,
+                      ),
+                      Text(
+                        '${(topPrediction.confidence * 100).toStringAsFixed(1)}% confidence',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+            ],
+
             Text(
-              'Predictions',
+              'All predictions',
               style: theme.textTheme.titleLarge,
             ),
             const SizedBox(height: 16),
 
-            if (predictions.isEmpty)
+            if (record.predictions.isEmpty)
               const Text('No predictions available.')
             else
-              ...predictions.map((prediction) {
+              ...record.predictions.asMap().entries.map((entry) {
+                final index = entry.key;
+                final prediction = entry.value;
                 final percentage = prediction.confidence * 100;
                 final progress = prediction.confidence
                     .clamp(0.0, 1.0)
                     .toDouble();
-                final isTop = prediction == predictions.first;
+                final isTop = index == 0;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 20),
@@ -79,7 +128,7 @@ class ResultScreen extends StatelessWidget {
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: isTop
                                     ? FontWeight.bold
-                                    : FontWeight.w500,
+                                    : FontWeight.normal,
                               ),
                             ),
                           ),
@@ -110,5 +159,14 @@ class ResultScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final local = date.toLocal();
+
+    String twoDigits(int value) => value.toString().padLeft(2, '0');
+
+    return '${twoDigits(local.day)}/${twoDigits(local.month)}/'
+        '${local.year} ${twoDigits(local.hour)}:${twoDigits(local.minute)}';
   }
 }
