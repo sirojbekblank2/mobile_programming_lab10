@@ -1,0 +1,6 @@
+0 Local Cat
+1 Mixed Breed
+2 Persian cat
+3 Bird
+4 Sirojbek
+5 Hand
