@@ -1,47 +1,88 @@
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
+import 'screens/welcome_screen.dart';
 import 'services/classifier.dart';
+import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   try {
     final classifier = await Classifier.load();
-
-    final bytes = await rootBundle.load('assets/model/sample.jpg');
-
-    final predictions = classifier.classify(
-      bytes.buffer.asUint8List(),
-    );
-
-    debugPrint('--- MODEL PREDICTIONS ---');
-
-    for (final prediction in predictions) {
-      debugPrint(
-        '${prediction.label}: '
-        '${(prediction.confidence * 100).toStringAsFixed(1)}%',
-      );
-    }
-
-    runApp(
-      const MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Text('Model loaded and tested successfully!'),
-          ),
-        ),
-      ),
-    );
+    runApp(ClassifierApp(classifier: classifier));
   } catch (e) {
-    debugPrint('CLASSIFIER ERROR: $e');
+    runApp(StartupErrorApp(error: e.toString()));
+  }
+}
 
-    runApp(
-      MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: Text('Classifier error: $e'),
+class ClassifierApp extends StatefulWidget {
+  const ClassifierApp({
+    super.key,
+    required this.classifier,
+  });
+
+  final Classifier classifier;
+
+  @override
+  State<ClassifierApp> createState() => _ClassifierAppState();
+}
+
+class _ClassifierAppState extends State<ClassifierApp> {
+  @override
+  void dispose() {
+    widget.classifier.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Object Lens',
+      theme: AppTheme.light,
+      home: WelcomeScreen(classifier: widget.classifier),
+    );
+  }
+}
+
+class StartupErrorApp extends StatelessWidget {
+  const StartupErrorApp({
+    super.key,
+    required this.error,
+  });
+
+  final String error;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      home: Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.error_outline,
+                  size: 56,
+                  color: Colors.red,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Unable to load the model',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
           ),
         ),
       ),
